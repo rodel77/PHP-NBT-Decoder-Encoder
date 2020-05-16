@@ -26,18 +26,19 @@ class NBT {
 	
 	public $verbose = false;
 	
-	const TAG_END = 0;
-	const TAG_BYTE = 1;
-	const TAG_SHORT = 2;
-	const TAG_INT = 3;
-	const TAG_LONG = 4;
-	const TAG_FLOAT = 5;
-	const TAG_DOUBLE = 6;
+	const TAG_END        = 0;
+	const TAG_BYTE       = 1;
+	const TAG_SHORT      = 2;
+	const TAG_INT        = 3;
+	const TAG_LONG       = 4;
+	const TAG_FLOAT      = 5;
+	const TAG_DOUBLE     = 6;
 	const TAG_BYTE_ARRAY = 7;
-	const TAG_STRING = 8;
-	const TAG_LIST = 9;
-	const TAG_COMPOUND = 10;
-	const TAG_INT_ARRAY = 11;
+	const TAG_STRING     = 8;
+	const TAG_LIST       = 9;
+	const TAG_COMPOUND   = 10;
+	const TAG_INT_ARRAY  = 11;
+	const TAG_LONG_ARRAY = 12;
 	
 	public function __construct($filename = null, $wrapper = "compress.zlib://") {
 		// PHP 5 constructor (just in case PHP 4-style constructors are ever deprecated)
@@ -181,6 +182,10 @@ class NBT {
 				$arrayLength = $this->readType($fp, self::TAG_INT);
 				$array = array_values(unpack("N*", fread($fp, $arrayLength * 4)));
 				return $array;
+			case self::TAG_LONG_ARRAY:
+                $arrayLength = $this->readType($fp, self::TAG_INT);
+				$array = array_values(unpack("J*", fread($fp, $arrayLength * 8)));
+				return $array;
 		}
 	}
 	
@@ -235,6 +240,8 @@ class NBT {
 				return true;
 			case self::TAG_INT_ARRAY: // Byte array
 				return $this->writeType($fp, self::TAG_INT, count($value)) && is_int(fwrite($fp, call_user_func_array("pack", array_merge(array("N".count($value)), $value))));
+			case self::TAG_LONG_ARRAY: // Byte array
+				return $this->writeType($fp, self::TAG_LONG, count($value)) && is_long(fwrite($fp, call_user_func_array("pack", array_merge(array("J".count($value)), $value))));
 		}
 	}
 }
